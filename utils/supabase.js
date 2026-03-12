@@ -16,6 +16,11 @@ export async function fetchSchedules() {
   return data;
 }
 
+export async function deleteSchedule(id) {
+  const { error } = await supabase.from('schedules').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function createSchedule(payload) {
   const { data, error } = await supabase
     .from('schedules')

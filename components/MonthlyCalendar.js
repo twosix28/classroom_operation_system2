@@ -5,7 +5,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { CATEGORY_LABELS, formatTime } from '../utils/supabase';
+import { CATEGORY_LABELS, formatTime, deleteSchedule } from '../utils/supabase';
 
 // Color palette per floor
 const FLOOR_COLORS = {
@@ -27,7 +27,7 @@ function scheduleToEvent(s) {
   };
 }
 
-export default function MonthlyCalendar({ schedules }) {
+export default function MonthlyCalendar({ schedules, onDeleted }) {
   const calRef = useRef(null);
 
   // Re-render calendar when schedules change
@@ -52,23 +52,32 @@ export default function MonthlyCalendar({ schedules }) {
     );
   }
 
-  function handleEventClick(clickInfo) {
+  async function handleEventClick(clickInfo) {
     const p = clickInfo.event.extendedProps;
-    alert(
+    const confirmed = window.confirm(
       `📌 ${p.room}호 예약 정보\n\n` +
-      `제목: ${clickInfo.event.title.replace(`[${p.room}] `, '')}\n` +
-      `카테고리: ${CATEGORY_LABELS[p.category] || p.category}\n` +
-      `시작: ${formatTime(p.start_time)}\n` +
-      `종료: ${formatTime(p.end_time)}\n` +
+      `제목: ${p.title}\n` +
+      `분류: ${CATEGORY_LABELS[p.category] || p.category}\n` +
+      `시간: ${formatTime(p.start_time)} ~ ${formatTime(p.end_time)}\n` +
       `신청자: ${p.author}\n` +
-      (p.request_note ? `메모: ${p.request_note}` : ''),
+      (p.request_note ? `메모: ${p.request_note}\n` : '') +
+      `\n[확인] 을 누르면 이 예약이 삭제됩니다.`
     );
+    if (!confirmed) return;
+    try {
+      await deleteSchedule(p.id);
+      clickInfo.event.remove();
+      if (onDeleted) onDeleted(p.id);
+    } catch (err) {
+      alert('삭제 중 오류가 발생했습니다: ' + err.message);
+    }
   }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full overflow-auto">
       <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
         <span className="text-blue-600">📅</span> 월별 예약 현황
+        <span className="text-xs text-gray-400 font-normal ml-1">(예약 클릭 → 삭제)</span>
       </h2>
 
       {/* Legend */}

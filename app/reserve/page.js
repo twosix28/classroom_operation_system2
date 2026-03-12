@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import PasswordGate from '../components/PasswordGate';
-import NavBar from '../components/NavBar';
-import RoomStatusBoard from '../components/RoomStatusBoard';
-import RoomRequestModal from '../components/RoomRequestModal';
-import { fetchSchedules, fetchRoomRequests, supabase } from '../utils/supabase';
+import dynamic from 'next/dynamic';
+import PasswordGate from '../../components/PasswordGate';
+import NavBar from '../../components/NavBar';
+import ReservationForm from '../../components/ReservationForm';
+import RoomRequestModal from '../../components/RoomRequestModal';
+import { fetchSchedules, fetchRoomRequests, supabase } from '../../utils/supabase';
 
-export default function HomePage() {
+const MonthlyCalendar = dynamic(() => import('../../components/MonthlyCalendar'), { ssr: false });
+
+export default function ReservePage() {
   const [schedules, setSchedules] = useState([]);
   const [requests, setRequests] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -24,10 +27,9 @@ export default function HomePage() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  // Realtime
   useEffect(() => {
     const channel = supabase
-      .channel('home-realtime')
+      .channel('reserve-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'schedules' }, (payload) => {
         if (payload.eventType === 'INSERT')
           setSchedules((prev) => [...prev, payload.new]);
@@ -41,30 +43,24 @@ export default function HomePage() {
           setRequests((prev) => [payload.new, ...prev]);
         else if (payload.eventType === 'UPDATE')
           setRequests((prev) => prev.map((r) => r.id === payload.new.id ? payload.new : r));
-        else if (payload.eventType === 'DELETE')
-          setRequests((prev) => prev.filter((r) => r.id !== payload.old.id));
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Re-evaluate ending-soon states every minute
-  useEffect(() => {
-    const interval = setInterval(() => setSchedules((s) => [...s]), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  function handleReservationSaved(saved) {
+    setSchedules((prev) => prev.find((s) => s.id === saved.id) ? prev : [...prev, saved]);
+  }
 
-  const openRequestCount = requests.filter((r) => r.status === 'open').length;
+  function handleDeleted(id) {
+    setSchedules((prev) => prev.filter((s) => s.id !== id));
+  }
 
   function handleRequestSaved(saved) {
     setRequests((prev) => prev.find((r) => r.id === saved.id) ? prev : [saved, ...prev]);
   }
 
-  function handleRequestResolved(reqId) {
-    setRequests((prev) =>
-      prev.map((r) => r.id === reqId ? { ...r, status: 'resolved', resolved_at: new Date().toISOString() } : r)
-    );
-  }
+  const openRequestCount = requests.filter((r) => r.status === 'open').length;
 
   return (
     <PasswordGate>
@@ -75,11 +71,19 @@ export default function HomePage() {
         />
 
         <main className="max-w-screen-2xl mx-auto px-4 py-6">
-          <RoomStatusBoard
-            schedules={schedules}
-            requests={requests}
-            onRequestResolved={handleRequestResolved}
-          />
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
+
+            {/* 캘린더 */}
+            <div>
+              <MonthlyCalendar schedules={schedules} onDeleted={handleDeleted} />
+            </div>
+
+            {/* 예약 폼 */}
+            <div>
+              <ReservationForm onSaved={handleReservationSaved} />
+            </div>
+
+          </div>
         </main>
 
         {showRequestModal && (
