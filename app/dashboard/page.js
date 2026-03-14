@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import PasswordGate from '../../components/PasswordGate';
 import NavBar from '../../components/NavBar';
 import DashboardScheduleCard from '../../components/DashboardScheduleCard';
+import RoomRequestModal from '../../components/RoomRequestModal';
 import { fetchDashboardSchedules, fetchRoomRequests, supabase } from '../../utils/supabase';
 
 function startOfToday() {
@@ -193,6 +194,12 @@ export default function DashboardPage() {
           </section>
 
         </main>
+        {showRequestModal && (
+          <RoomRequestModal
+            onClose={() => setShowRequestModal(false)}
+            onSaved={() => setShowRequestModal(false)}
+          />
+        )}
       </div>
     </PasswordGate>
   );

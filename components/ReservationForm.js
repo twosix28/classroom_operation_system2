@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FloorRoomSelector from './FloorRoomSelector';
 import {
   CATEGORY_LABELS,
   checkConflict,
   createSchedule,
+  updateSchedule,
+  deleteSchedule,
   createRoomLog,
 } from '../utils/supabase';
 
@@ -16,7 +18,7 @@ function toLocalDatetimeString(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function ReservationForm({ onSaved }) {
+export default function ReservationForm({ onSaved, editingSchedule, onEdited, onDeleted, onEditClear }) {
   const now = new Date();
   const later = new Date(now.getTime() + 60 * 60 * 1000);
 
@@ -34,6 +36,48 @@ export default function ReservationForm({ onSaved }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Populate form when an existing schedule is selected for editing
+  useEffect(() => {
+    if (!editingSchedule) return;
+    setFloor(editingSchedule.floor);
+    setRoom(editingSchedule.room);
+    setTitle(editingSchedule.title || '');
+    setProjectName(editingSchedule.project_name || '');
+    setStudentCount(editingSchedule.student_count ?? '');
+    setCategory(editingSchedule.category || 'lecture');
+    setStartTime(toLocalDatetimeString(new Date(editingSchedule.start_time)));
+    setEndTime(toLocalDatetimeString(new Date(editingSchedule.end_time)));
+    setAuthor(editingSchedule.author || '');
+    setFacilityManager(editingSchedule.facility_manager || '');
+    setRequestNote(editingSchedule.request_note || '');
+    setError('');
+    setSuccess(false);
+  }, [editingSchedule]);
+
+  function resetForm() {
+    setFloor(''); setRoom(''); setTitle(''); setProjectName('');
+    setStudentCount(''); setCategory('lecture');
+    setAuthor(''); setFacilityManager(''); setRequestNote('');
+    setStartTime(toLocalDatetimeString(new Date()));
+    setEndTime(toLocalDatetimeString(new Date(Date.now() + 3600000)));
+    setError(''); setSuccess(false);
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`"${title}" 예약을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+    setLoading(true);
+    try {
+      await deleteSchedule(editingSchedule.id);
+      if (onDeleted) onDeleted(editingSchedule.id);
+      if (onEditClear) onEditClear();
+      resetForm();
+    } catch (err) {
+      setError('삭제 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -86,7 +130,7 @@ export default function ReservationForm({ onSaved }) {
         return;
       }
 
-      const saved = await createSchedule({
+      const payload = {
         floor: Number(floor),
         room,
         title: title.trim(),
@@ -98,28 +142,32 @@ export default function ReservationForm({ onSaved }) {
         author: author.trim(),
         facility_manager: facilityManager.trim() || null,
         request_note: requestNote.trim() || null,
-        color: COLORS_BY_FLOOR[floor] || '#6b7280',
-      });
+      };
 
-      await createRoomLog({
-        floor: Number(floor),
-        room,
-        status_type: 'usage_started',
-        message: `"${title.trim()}" 예약이 등록되었습니다. (신청자: ${author.trim()})`,
-      });
-
-      setSuccess(true);
-      setTitle('');
-      setProjectName('');
-      setStudentCount('');
-      setCategory('lecture');
-      setRequestNote('');
-      setAuthor('');
-      setFacilityManager('');
-      setStartTime(toLocalDatetimeString(new Date()));
-      setEndTime(toLocalDatetimeString(new Date(Date.now() + 3600000)));
-
-      if (onSaved) onSaved(saved);
+      if (editingSchedule) {
+        const updated = await updateSchedule(editingSchedule.id, payload);
+        await createRoomLog({
+          floor: Number(floor),
+          room,
+          status_type: 'usage_started',
+          message: `"${title.trim()}" 예약이 수정되었습니다. (신청자: ${author.trim()})`,
+        });
+        setSuccess(true);
+        if (onEdited) onEdited(updated);
+        if (onEditClear) onEditClear();
+        resetForm();
+      } else {
+        const saved = await createSchedule({ ...payload, color: COLORS_BY_FLOOR[floor] || '#6b7280' });
+        await createRoomLog({
+          floor: Number(floor),
+          room,
+          status_type: 'usage_started',
+          message: `"${title.trim()}" 예약이 등록되었습니다. (신청자: ${author.trim()})`,
+        });
+        setSuccess(true);
+        resetForm();
+        if (onSaved) onSaved(saved);
+      }
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError('저장 중 오류가 발생했습니다: ' + err.message);
@@ -130,9 +178,28 @@ export default function ReservationForm({ onSaved }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full overflow-auto">
-      <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <span className="text-green-600">📝</span> 강의실 예약
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <span className={editingSchedule ? 'text-amber-500' : 'text-green-600'}>
+            {editingSchedule ? '✏️' : '📝'}
+          </span>
+          {editingSchedule ? '예약 수정' : '강의실 예약'}
+        </h2>
+        {editingSchedule && (
+          <button
+            type="button"
+            onClick={() => { if (onEditClear) onEditClear(); resetForm(); }}
+            className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+          >
+            새 예약 작성
+          </button>
+        )}
+      </div>
+      {editingSchedule && (
+        <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700">
+          선택된 예약: <span className="font-semibold">{editingSchedule.room}호 — {editingSchedule.title}</span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Floor + Room */}
@@ -269,10 +336,25 @@ export default function ReservationForm({ onSaved }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors text-sm"
+          className={`w-full py-2.5 text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-60 ${
+            editingSchedule
+              ? 'bg-amber-500 hover:bg-amber-600'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          {loading ? '저장 중...' : '예약 등록'}
+          {loading ? '저장 중...' : editingSchedule ? '수정 완료' : '예약 등록'}
         </button>
+
+        {editingSchedule && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={loading}
+            className="w-full py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors text-sm"
+          >
+            예약 삭제
+          </button>
+        )}
       </form>
     </div>
   );

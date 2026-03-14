@@ -14,6 +14,7 @@ export default function ReservePage() {
   const [schedules, setSchedules] = useState([]);
   const [requests, setRequests] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
 
   const loadAll = useCallback(async () => {
     try {
@@ -54,6 +55,12 @@ export default function ReservePage() {
 
   function handleDeleted(id) {
     setSchedules((prev) => prev.filter((s) => s.id !== id));
+    setSelectedSchedule((s) => (s?.id === id ? null : s));
+  }
+
+  function handleEdited(updated) {
+    setSchedules((prev) => prev.map((s) => s.id === updated.id ? updated : s));
+    setSelectedSchedule(null);
   }
 
   function handleRequestSaved(saved) {
@@ -75,12 +82,22 @@ export default function ReservePage() {
 
             {/* 캘린더 */}
             <div>
-              <MonthlyCalendar schedules={schedules} onDeleted={handleDeleted} />
+              <MonthlyCalendar
+              schedules={schedules}
+              onDeleted={handleDeleted}
+              onEventSelect={setSelectedSchedule}
+            />
             </div>
 
             {/* 예약 폼 */}
             <div>
-              <ReservationForm onSaved={handleReservationSaved} />
+              <ReservationForm
+                onSaved={handleReservationSaved}
+                editingSchedule={selectedSchedule}
+                onEdited={handleEdited}
+                onDeleted={handleDeleted}
+                onEditClear={() => setSelectedSchedule(null)}
+              />
             </div>
 
           </div>

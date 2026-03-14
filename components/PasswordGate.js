@@ -37,10 +37,9 @@ export default function PasswordGate({ children }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-slate-900 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8">
         <div className="text-center mb-7">
-          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl">✈</span>
+          <div className="flex justify-center mb-4">
+            <img src="/logo.png" alt="항공우주산학융합원" className="h-20 w-auto object-contain" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">항공우주 산학융합원</h1>
           <p className="text-sm text-gray-500 mt-1">강의실 예약 관리 시스템</p>
         </div>
 

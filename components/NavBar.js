@@ -17,16 +17,8 @@ export default function NavBar({ openRequestCount = 0, onHelpRequest }) {
     <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
       <div className="max-w-screen-2xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white text-lg">✈</span>
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-base font-bold text-gray-900 leading-tight">
-              항공우주 산학융합원
-            </h1>
-            <p className="text-xs text-gray-500">강의실 예약 및 관리 시스템</p>
-          </div>
+        <div className="flex items-center">
+          <img src="/logo.png" alt="항공우주산학융합원" className="h-10 w-auto object-contain" />
         </div>
 
         {/* Nav links */}
