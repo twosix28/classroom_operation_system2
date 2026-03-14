@@ -23,10 +23,13 @@ export default function ReservationForm({ onSaved }) {
   const [floor, setFloor] = useState('');
   const [room, setRoom] = useState('');
   const [title, setTitle] = useState('');
+  const [projectName, setProjectName] = useState('');
+  const [studentCount, setStudentCount] = useState('');
   const [category, setCategory] = useState('lecture');
   const [startTime, setStartTime] = useState(toLocalDatetimeString(now));
   const [endTime, setEndTime] = useState(toLocalDatetimeString(later));
   const [author, setAuthor] = useState('');
+  const [facilityManager, setFacilityManager] = useState('');
   const [requestNote, setRequestNote] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -87,10 +90,13 @@ export default function ReservationForm({ onSaved }) {
         floor: Number(floor),
         room,
         title: title.trim(),
+        project_name: projectName.trim() || null,
+        student_count: studentCount ? Number(studentCount) : null,
         category,
         start_time: startISO,
         end_time: endISO,
         author: author.trim(),
+        facility_manager: facilityManager.trim() || null,
         request_note: requestNote.trim() || null,
         color: COLORS_BY_FLOOR[floor] || '#6b7280',
       });
@@ -104,9 +110,12 @@ export default function ReservationForm({ onSaved }) {
 
       setSuccess(true);
       setTitle('');
+      setProjectName('');
+      setStudentCount('');
       setCategory('lecture');
       setRequestNote('');
       setAuthor('');
+      setFacilityManager('');
       setStartTime(toLocalDatetimeString(new Date()));
       setEndTime(toLocalDatetimeString(new Date(Date.now() + 3600000)));
 
@@ -146,52 +155,89 @@ export default function ReservationForm({ onSaved }) {
           />
         </div>
 
-        {/* Category */}
+        {/* Project Name */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">분류 *</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Time */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">시작 시간 *</label>
-            <input
-              type="datetime-local"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">종료 시간 *</label>
-            <input
-              type="datetime-local"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        {/* Author */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">신청자 *</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">사업명 (선택)</label>
           <input
             type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder="이름을 입력하세요"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="예: 항공우주 인재양성 사업"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Category + Student Count */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">분류 *</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {Object.entries(CATEGORY_LABELS).map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">수강생 수 (선택)</label>
+            <input
+              type="number"
+              min="1"
+              value={studentCount}
+              onChange={(e) => setStudentCount(e.target.value)}
+              placeholder="명"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Start Time */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">시작 시간 *</label>
+          <input
+            type="datetime-local"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        {/* End Time */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">종료 시간 *</label>
+          <input
+            type="datetime-local"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Author + Facility Manager */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">강사명 *</label>
+            <input
+              type="text"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="이름을 입력하세요"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">시설 관리 담당자</label>
+            <input
+              type="text"
+              value={facilityManager}
+              onChange={(e) => setFacilityManager(e.target.value)}
+              placeholder="담당자 이름"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
 
         {/* Note */}

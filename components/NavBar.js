@@ -51,6 +51,16 @@ export default function NavBar({ openRequestCount = 0, onHelpRequest }) {
           >
             📝 예약 관리
           </Link>
+          <Link
+            href="/dashboard"
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              pathname === '/dashboard'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            📊 대쉬보드
+          </Link>
         </nav>
 
         {/* Right actions */}

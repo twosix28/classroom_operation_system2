@@ -16,6 +16,19 @@ export async function fetchSchedules() {
   return data;
 }
 
+/** Fetch today's + future schedules for dashboard */
+export async function fetchDashboardSchedules() {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const { data, error } = await supabase
+    .from('schedules')
+    .select('*')
+    .gte('end_time', startOfToday.toISOString())
+    .order('start_time', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteSchedule(id) {
   const { error } = await supabase.from('schedules').delete().eq('id', id);
   if (error) throw error;

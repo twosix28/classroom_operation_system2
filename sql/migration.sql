@@ -4,24 +4,30 @@
 
 -- 1. Create schedules table (safe: does nothing if already exists)
 CREATE TABLE IF NOT EXISTS schedules (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  title        TEXT NOT NULL,
-  start_time   TIMESTAMPTZ NOT NULL,
-  end_time     TIMESTAMPTZ NOT NULL,
-  author       TEXT,
-  color        TEXT,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  floor        INTEGER,
-  room         TEXT,
-  category     TEXT DEFAULT 'other',
-  request_note TEXT
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title         TEXT NOT NULL,
+  start_time    TIMESTAMPTZ NOT NULL,
+  end_time      TIMESTAMPTZ NOT NULL,
+  author        TEXT,
+  color         TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  floor         INTEGER,
+  room          TEXT,
+  category      TEXT DEFAULT 'other',
+  request_note  TEXT,
+  project_name      TEXT,
+  student_count     INTEGER,
+  facility_manager  TEXT
 );
 
 -- If schedules already existed, add any missing columns individually
-ALTER TABLE schedules ADD COLUMN IF NOT EXISTS floor        INTEGER;
-ALTER TABLE schedules ADD COLUMN IF NOT EXISTS room         TEXT;
-ALTER TABLE schedules ADD COLUMN IF NOT EXISTS category     TEXT DEFAULT 'other';
-ALTER TABLE schedules ADD COLUMN IF NOT EXISTS request_note TEXT;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS floor         INTEGER;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS room          TEXT;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS category      TEXT DEFAULT 'other';
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS request_note  TEXT;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS project_name      TEXT;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS student_count     INTEGER;
+ALTER TABLE schedules ADD COLUMN IF NOT EXISTS facility_manager  TEXT;
 
 -- 2. Create room_requests table
 CREATE TABLE IF NOT EXISTS room_requests (
