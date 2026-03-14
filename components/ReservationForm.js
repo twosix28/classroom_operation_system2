@@ -113,6 +113,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
         room,
         start_time: startISO,
         end_time: endISO,
+        excludeId: editingSchedule?.id,
       });
 
       if (conflicts.length > 0) {
