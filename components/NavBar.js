@@ -53,6 +53,16 @@ export default function NavBar({ openRequestCount = 0, onHelpRequest }) {
           >
             📊 대쉬보드
           </Link>
+          <Link
+            href="/usage-log"
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              pathname === '/usage-log'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            📋 사용 이력
+          </Link>
         </nav>
 
         {/* Right actions */}

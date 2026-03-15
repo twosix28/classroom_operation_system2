@@ -16,6 +16,25 @@ export async function fetchSchedules() {
   return data;
 }
 
+/** Fetch schedules filtered by optional date range (for usage log) */
+export async function fetchSchedulesByDateRange({ startDate, endDate } = {}) {
+  let query = supabase
+    .from('schedules')
+    .select('*')
+    .order('start_time', { ascending: false });
+  if (startDate) {
+    const s = new Date(startDate); s.setHours(0, 0, 0, 0);
+    query = query.gte('start_time', s.toISOString());
+  }
+  if (endDate) {
+    const e = new Date(endDate); e.setHours(23, 59, 59, 999);
+    query = query.lte('start_time', e.toISOString());
+  }
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
 /** Fetch today's + future schedules for dashboard */
 export async function fetchDashboardSchedules() {
   const startOfToday = new Date();

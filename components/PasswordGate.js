@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 
-const PASSWORD = 'june';
 const SESSION_KEY = 'classroom_auth';
 
 export default function PasswordGate({ children }) {
@@ -10,6 +9,7 @@ export default function PasswordGate({ children }) {
   const [input, setInput] = useState('');
   const [error, setError] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY) === '1') {
@@ -18,15 +18,31 @@ export default function PasswordGate({ children }) {
     setChecking(false);
   }, []);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (input === PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, '1');
-      setAuthed(true);
-    } else {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: input }),
+      });
+      const { ok } = await res.json();
+      if (ok) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        setAuthed(true);
+      } else {
+        setError(true);
+        setInput('');
+        setTimeout(() => setError(false), 1500);
+      }
+    } catch {
       setError(true);
       setInput('');
       setTimeout(() => setError(false), 1500);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -68,9 +84,10 @@ export default function PasswordGate({ children }) {
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition-colors"
+            disabled={submitting}
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-xl text-sm transition-colors"
           >
-            입장
+            {submitting ? '확인 중...' : '입장'}
           </button>
         </form>
       </div>
