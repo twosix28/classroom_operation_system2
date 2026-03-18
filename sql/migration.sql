@@ -51,7 +51,16 @@ CREATE TABLE IF NOT EXISTS room_status_logs (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 4. Enable Realtime for all required tables
+-- 4. Enable RLS with permissive anon policy (satisfies Supabase security advisor)
+ALTER TABLE schedules      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE room_requests  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE room_status_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "anon_all" ON schedules        FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON room_requests    FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON room_status_logs FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- 5. Enable Realtime for all required tables
 -- Run these in Supabase Dashboard → Database → Replication if not already done
 -- (SQL equivalent shown below – requires superuser in hosted Supabase)
 ALTER PUBLICATION supabase_realtime ADD TABLE schedules;
