@@ -88,7 +88,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
     setError('');
     setSuccess(false);
 
-    if (!floor || !room) {
+    if ((floor === '' || floor === null || floor === undefined) || !room) {
       setError('층과 강의실을 선택해 주세요.');
       return;
     }
