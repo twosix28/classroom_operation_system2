@@ -63,6 +63,16 @@ export default function NavBar({ openRequestCount = 0, onHelpRequest }) {
           >
             📋 사용 이력
           </Link>
+          <Link
+            href="/meeting"
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              pathname === '/meeting'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            🏛️ 회의실 현황
+          </Link>
         </nav>
 
         {/* Right actions */}

@@ -6,12 +6,7 @@ import NavBar from '../../components/NavBar';
 import DashboardScheduleCard from '../../components/DashboardScheduleCard';
 import RoomRequestModal from '../../components/RoomRequestModal';
 import { fetchDashboardSchedules, fetchRoomRequests, supabase } from '../../utils/supabase';
-
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
+import KtbizSection from '../../components/KtbizSection';
 
 function endOfToday() {
   const d = new Date();
@@ -21,7 +16,6 @@ function endOfToday() {
 
 function classifySchedules(schedules) {
   const now = new Date();
-  const todayStart = startOfToday();
   const todayEnd = endOfToday();
   const active = [];
   const todayLater = [];
@@ -176,6 +170,9 @@ export default function DashboardPage() {
               )}
             </div>
           </section>
+
+          {/* KT 비즈 회의실 섹션 */}
+          <KtbizSection />
 
           {/* Upcoming section */}
           <section>

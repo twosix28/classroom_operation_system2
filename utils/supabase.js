@@ -147,10 +147,15 @@ export async function createRoomLog(payload) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const FLOORS = [1, 2, 3];
+export const FLOORS = [1, 2, 4];
 
 export function getRoomsForFloor(floor) {
-  return Array.from({ length: 10 }, (_, i) => `${floor}${String(i + 1).padStart(2, '0')}`);
+  const rooms = {
+    1: ['133', '137'],
+    2: ['231', '232', '233', '234', '235', '236', '239'],
+    4: ['357'],
+  };
+  return rooms[floor] || [];
 }
 
 export const CATEGORY_LABELS = {
