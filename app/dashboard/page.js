@@ -171,9 +171,6 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* KT 비즈 회의실 섹션 */}
-          <KtbizSection />
-
           {/* Upcoming section */}
           <section>
             <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -189,6 +186,9 @@ export default function DashboardPage() {
               )}
             </div>
           </section>
+
+          {/* KT 비즈 회의실 섹션 */}
+          <KtbizSection />
 
         </main>
         {showRequestModal && (

@@ -26,7 +26,8 @@ function parseXml(xml) {
       return r ? r[1].trim() : ''
     }
     const ownerId = get('owner_id')
-    const roomInfo = ROOM_MAP[ownerId] || { room: ownerId, name: '회의실' }
+    if (!ROOM_MAP[ownerId]) continue  // 매핑 없는 항목(zoom 공지 등) 제외
+    const roomInfo = ROOM_MAP[ownerId]
     // KT 비즈는 KST를 Z로 잘못 표기 → Z 제거해서 로컬 시간으로 처리
     const toLocal = (s) => s.replace(/\.000Z$/, '').replace(/Z$/, '')
     results.push({

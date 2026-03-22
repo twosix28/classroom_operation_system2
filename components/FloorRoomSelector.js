@@ -11,6 +11,7 @@ export default function FloorRoomSelector({ selectedFloor, selectedRoom, onFloor
         <div className="flex gap-2">
           {FLOORS.map((floor) => (
             <button
+              type="button"
               key={floor}
               onClick={() => {
                 onFloorChange(floor);
@@ -35,6 +36,7 @@ export default function FloorRoomSelector({ selectedFloor, selectedRoom, onFloor
           <div className="grid grid-cols-5 gap-1.5">
             {getRoomsForFloor(selectedFloor).map((room) => (
               <button
+                type="button"
                 key={room}
                 onClick={() => onRoomChange(room)}
                 className={`py-2 rounded-lg text-sm font-medium transition-all border ${
