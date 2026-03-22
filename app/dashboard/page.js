@@ -64,6 +64,7 @@ export default function DashboardPage() {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [studentModalSchedule, setStudentModalSchedule] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [loadError, setLoadError] = useState(false);
 
   const loadAll = useCallback(async () => {
     try {
@@ -74,8 +75,10 @@ export default function DashboardPage() {
       setSchedules(sched);
       setOpenRequestCount(reqs.filter((r) => r.status === 'open').length);
       setLastUpdated(new Date());
+      setLoadError(false);
     } catch (err) {
       console.error('대쉬보드 데이터 로드 오류:', err);
+      setLoadError(true);
     }
   }, []);
 
@@ -127,6 +130,19 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
+
+          {/* 데이터 로드 실패 배너 */}
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center justify-between gap-3">
+              <span>데이터를 불러오지 못했습니다. 네트워크 상태를 확인하거나 새로고침 해주세요.</span>
+              <button
+                onClick={loadAll}
+                className="shrink-0 font-semibold underline hover:text-red-900"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
 
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

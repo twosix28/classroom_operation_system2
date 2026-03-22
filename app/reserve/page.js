@@ -15,14 +15,17 @@ export default function ReservePage() {
   const [requests, setRequests] = useState([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [loadError, setLoadError] = useState(false);
 
   const loadAll = useCallback(async () => {
     try {
       const [sched, reqs] = await Promise.all([fetchSchedules(), fetchRoomRequests()]);
       setSchedules(sched);
       setRequests(reqs);
+      setLoadError(false);
     } catch (err) {
       console.error('데이터 로드 오류:', err);
+      setLoadError(true);
     }
   }, []);
 
@@ -77,7 +80,18 @@ export default function ReservePage() {
           onHelpRequest={() => setShowRequestModal(true)}
         />
 
-        <main className="max-w-screen-2xl mx-auto px-4 py-6">
+        <main className="max-w-screen-2xl mx-auto px-4 py-6 space-y-4">
+          {loadError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex items-center justify-between gap-3">
+              <span>데이터를 불러오지 못했습니다. 네트워크 상태를 확인하거나 새로고침 해주세요.</span>
+              <button
+                onClick={loadAll}
+                className="shrink-0 font-semibold underline hover:text-red-900"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
 
             {/* 캘린더 */}

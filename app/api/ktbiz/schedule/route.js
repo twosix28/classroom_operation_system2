@@ -154,6 +154,26 @@ async function fetchSchedule(loginCookieStr, startDate, endDate) {
   return await res.text()
 }
 
+// ─── LoginCookie 인메모리 캐시 ──────────────────────────────────────────────
+// 매 요청마다 로그인(3 HTTP 왕복)하는 비용을 줄임
+// Vercel Serverless: 동일 인스턴스 재사용 시 캐시 히트, cold start 시 재로그인
+let _cachedCookie = null
+let _cookieExpiry = 0
+const COOKIE_TTL_MS = 25 * 60 * 1000 // 25분 (KT 세션 30분 기준)
+
+async function getLoginCookie(userId, userPw) {
+  if (_cachedCookie && Date.now() < _cookieExpiry) return _cachedCookie
+  const cookieStr = await login(userId, userPw)
+  _cachedCookie = cookieStr
+  _cookieExpiry = Date.now() + COOKIE_TTL_MS
+  return cookieStr
+}
+
+function invalidateLoginCookie() {
+  _cachedCookie = null
+  _cookieExpiry = 0
+}
+
 /**
  * GET /api/ktbiz/schedule?start=2026-03-16&end=2026-03-22
  */
@@ -170,12 +190,23 @@ export async function GET(request) {
   }
 
   try {
-    const cookieStr = await login(userId, userPw)
+    const cookieStr = await getLoginCookie(userId, userPw)
     const xmlData = await fetchSchedule(cookieStr, startDate, endDate)
+
+    // 세션 만료 감지(로그인 페이지로 리다이렉트된 HTML) → 캐시 무효화 후 1회 재시도
+    if (xmlData.includes('LoginN.aspx')) {
+      invalidateLoginCookie()
+      const freshCookie = await getLoginCookie(userId, userPw)
+      const retryData = await fetchSchedule(freshCookie, startDate, endDate)
+      return Response.json({ schedules: parseXml(retryData) })
+    }
 
     return Response.json({ schedules: parseXml(xmlData) })
   } catch (err) {
     console.error('[ktbiz] 오류:', err)
+    if (err.message.includes('LoginCookie') || err.message.includes('로그인')) {
+      invalidateLoginCookie()
+    }
     return Response.json({ error: err.message }, { status: 500 })
   }
 }
