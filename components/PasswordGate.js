@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 
 const SESSION_KEY = 'classroom_auth';
+const TOKEN_KEY = 'classroom_token';
+const TOKEN_DATE_KEY = 'classroom_token_date';
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function PasswordGate({ children }) {
   const [authed, setAuthed] = useState(false);
@@ -12,8 +18,16 @@ export default function PasswordGate({ children }) {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    // 세션이 있고 토큰이 오늘 발급된 것이면 그대로 인증 유지
+    const hasSession = sessionStorage.getItem(SESSION_KEY) === '1';
+    const tokenDate = sessionStorage.getItem(TOKEN_DATE_KEY);
+    if (hasSession && tokenDate === todayStr()) {
       setAuthed(true);
+    } else {
+      // 만료된 세션 정리 (날짜가 바뀌면 재로그인 필요)
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(TOKEN_DATE_KEY);
     }
     setChecking(false);
   }, []);
@@ -28,9 +42,17 @@ export default function PasswordGate({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: input }),
       });
-      const { ok } = await res.json();
+      if (res.status === 429) {
+        setError(true);
+        setInput('');
+        setTimeout(() => setError(false), 1500);
+        return;
+      }
+      const { ok, token } = await res.json();
       if (ok) {
         sessionStorage.setItem(SESSION_KEY, '1');
+        sessionStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.setItem(TOKEN_DATE_KEY, todayStr());
         setAuthed(true);
       } else {
         setError(true);

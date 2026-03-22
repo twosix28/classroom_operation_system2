@@ -136,8 +136,9 @@ export default function KtbizSection() {
       </div>
 
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-          회의실 데이터를 불러오지 못했습니다: {error}
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 flex items-center justify-between gap-3">
+          <span>회의실 데이터를 불러오지 못했습니다.</span>
+          <button onClick={load} className="underline font-semibold shrink-0">다시 시도</button>
         </div>
       ) : loading && schedules.length === 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -5,6 +5,27 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// ─── 서버 API Route 호출 헬퍼 ────────────────────────────────────────────────
+// 쓰기 작업은 service_role 키를 사용하는 API Route를 통해서만 수행
+// (anon 키로는 RLS에 의해 쓰기 차단됨)
+
+function getAuthHeader() {
+  if (typeof window === 'undefined') return {};
+  const token = sessionStorage.getItem('classroom_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function apiFetch(url, method, body) {
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || `요청 실패 (${res.status})`);
+  return json;
+}
+
 // ─── Schedules ────────────────────────────────────────────────────────────────
 
 export async function fetchSchedules() {
@@ -49,29 +70,15 @@ export async function fetchDashboardSchedules() {
 }
 
 export async function deleteSchedule(id) {
-  const { error } = await supabase.from('schedules').delete().eq('id', id);
-  if (error) throw error;
+  await apiFetch(`/api/schedules/${id}`, 'DELETE');
 }
 
 export async function updateSchedule(id, payload) {
-  const { data, error } = await supabase
-    .from('schedules')
-    .update(payload)
-    .eq('id', id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return apiFetch(`/api/schedules/${id}`, 'PATCH', payload);
 }
 
 export async function createSchedule(payload) {
-  const { data, error } = await supabase
-    .from('schedules')
-    .insert([payload])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return apiFetch('/api/schedules', 'POST', payload);
 }
 
 /** Returns overlapping schedules for the same room (excluding optional excludeId) */
@@ -105,24 +112,11 @@ export async function fetchRoomRequests({ status } = {}) {
 }
 
 export async function createRoomRequest(payload) {
-  const { data, error } = await supabase
-    .from('room_requests')
-    .insert([payload])
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return apiFetch('/api/requests', 'POST', payload);
 }
 
 export async function resolveRoomRequest(id) {
-  const { data, error } = await supabase
-    .from('room_requests')
-    .update({ status: 'resolved', resolved_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  return apiFetch(`/api/requests/${id}`, 'PATCH');
 }
 
 // ─── Room Status Logs ─────────────────────────────────────────────────────────
@@ -141,8 +135,11 @@ export async function fetchRoomLogs({ floor, room, limit = 20 } = {}) {
 }
 
 export async function createRoomLog(payload) {
-  const { error } = await supabase.from('room_status_logs').insert([payload]);
-  if (error) console.error('room_status_logs insert error', error);
+  try {
+    await apiFetch('/api/logs', 'POST', payload);
+  } catch (err) {
+    console.error('room_status_logs insert error', err);
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
