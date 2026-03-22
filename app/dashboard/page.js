@@ -5,6 +5,7 @@ import PasswordGate from '../../components/PasswordGate';
 import NavBar from '../../components/NavBar';
 import DashboardScheduleCard from '../../components/DashboardScheduleCard';
 import RoomRequestModal from '../../components/RoomRequestModal';
+import StudentListModal from '../../components/StudentListModal';
 import { fetchDashboardSchedules, fetchRoomRequests, supabase } from '../../utils/supabase';
 import KtbizSection from '../../components/KtbizSection';
 
@@ -61,6 +62,7 @@ export default function DashboardPage() {
   const [schedules, setSchedules] = useState([]);
   const [openRequestCount, setOpenRequestCount] = useState(0);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [studentModalSchedule, setStudentModalSchedule] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const loadAll = useCallback(async () => {
@@ -165,6 +167,7 @@ export default function DashboardPage() {
                     key={s.id}
                     schedule={s}
                     status={active.includes(s) ? 'active' : 'today'}
+                    onClick={() => setStudentModalSchedule(s)}
                   />
                 ))
               )}
@@ -181,7 +184,12 @@ export default function DashboardPage() {
                 <EmptyState message="앞으로 예정된 예약이 없습니다." />
               ) : (
                 upcoming.map((s) => (
-                  <DashboardScheduleCard key={s.id} schedule={s} status="upcoming" />
+                  <DashboardScheduleCard
+                    key={s.id}
+                    schedule={s}
+                    status="upcoming"
+                    onClick={() => setStudentModalSchedule(s)}
+                  />
                 ))
               )}
             </div>
@@ -195,6 +203,16 @@ export default function DashboardPage() {
           <RoomRequestModal
             onClose={() => setShowRequestModal(false)}
             onSaved={() => setShowRequestModal(false)}
+          />
+        )}
+        {studentModalSchedule && (
+          <StudentListModal
+            schedule={studentModalSchedule}
+            onClose={() => setStudentModalSchedule(null)}
+            onUpdated={(updated) => {
+              setSchedules((prev) => prev.map((s) => s.id === updated.id ? updated : s));
+              setStudentModalSchedule(updated);
+            }}
           />
         )}
       </div>

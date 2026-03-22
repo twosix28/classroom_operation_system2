@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import FloorRoomSelector from './FloorRoomSelector';
+import StudentListUpload from './StudentListUpload';
 import {
   CATEGORY_LABELS,
   checkConflict,
@@ -33,6 +34,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
   const [author, setAuthor] = useState('');
   const [facilityManager, setFacilityManager] = useState('');
   const [requestNote, setRequestNote] = useState('');
+  const [students, setStudents] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -51,6 +53,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
     setAuthor(editingSchedule.author || '');
     setFacilityManager(editingSchedule.facility_manager || '');
     setRequestNote(editingSchedule.request_note || '');
+    setStudents(Array.isArray(editingSchedule.students) ? editingSchedule.students : []);
     setError('');
     setSuccess(false);
   }, [editingSchedule]);
@@ -59,6 +62,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
     setFloor(''); setRoom(''); setTitle(''); setProjectName('');
     setStudentCount(''); setCategory('lecture');
     setAuthor(''); setFacilityManager(''); setRequestNote('');
+    setStudents([]);
     setStartTime(toLocalDatetimeString(new Date()));
     setEndTime(toLocalDatetimeString(new Date(Date.now() + 3600000)));
     setError(''); setSuccess(false);
@@ -143,6 +147,7 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
         author: author.trim(),
         facility_manager: facilityManager.trim() || null,
         request_note: requestNote.trim() || null,
+        students: students.length > 0 ? students : [],
       };
 
       if (editingSchedule) {
@@ -307,6 +312,9 @@ export default function ReservationForm({ onSaved, editingSchedule, onEdited, on
             />
           </div>
         </div>
+
+        {/* Student List */}
+        <StudentListUpload students={students} onChange={setStudents} />
 
         {/* Note */}
         <div>

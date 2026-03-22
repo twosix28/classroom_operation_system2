@@ -34,20 +34,31 @@ function formatPeriod(start_time, end_time) {
   return `${dateStr} ${startT} ~ ${endDateStr} ${endT}`;
 }
 
-export default function DashboardScheduleCard({ schedule, status }) {
+export default function DashboardScheduleCard({ schedule, status, onClick }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.upcoming;
   const catLabel = CATEGORY_LABELS[schedule.category] || schedule.category;
+  const hasStudents = Array.isArray(schedule.students) && schedule.students.length > 0;
 
   return (
-    <div className={`rounded-xl border ${cfg.cardClass} p-4 flex flex-col gap-3`}>
+    <div
+      className={`rounded-xl border ${cfg.cardClass} p-4 flex flex-col gap-3 ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+      onClick={onClick}
+    >
       {/* Header */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${cfg.badgeClass}`}>
           {cfg.label}
         </span>
-        <span className="text-sm font-semibold text-gray-700 bg-white px-2.5 py-1 rounded-lg border border-gray-200 shrink-0">
-          {schedule.floor}층 {schedule.room}호
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {hasStudents && (
+            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-lg">
+              👥 {schedule.students.length}명
+            </span>
+          )}
+          <span className="text-sm font-semibold text-gray-700 bg-white px-2.5 py-1 rounded-lg border border-gray-200">
+            {schedule.floor}층 {schedule.room}호
+          </span>
+        </div>
       </div>
 
       {/* Title / Project name */}
