@@ -46,7 +46,7 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
         <div className="px-5 py-4 border-b border-gray-100 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs text-gray-400 mb-0.5">
-              {schedule.floor}층 {schedule.room}호 · {formatPeriod(schedule.start_time, schedule.end_time)}
+              {schedule.floor === 0 ? schedule.room : `${schedule.floor}층 ${schedule.room}호`} · {formatPeriod(schedule.start_time, schedule.end_time)}
             </p>
             <h2 className="text-base font-bold text-gray-900 leading-snug truncate">
               {schedule.project_name || schedule.title}

@@ -12,6 +12,7 @@ const FLOOR_COLORS = {
   1: { bg: '#3b82f6', border: '#2563eb' }, // blue
   2: { bg: '#10b981', border: '#059669' }, // green
   3: { bg: '#8b5cf6', border: '#7c3aed' }, // purple
+  0: { bg: '#6b7280', border: '#4b5563' }, // gray - 외부 시설
 };
 
 function scheduleToEvent(s) {
@@ -72,7 +73,7 @@ export default function MonthlyCalendar({ schedules, onDeleted, onEventSelect })
               className="inline-block w-3 h-3 rounded-sm"
               style={{ backgroundColor: c.bg }}
             />
-            {floor}층
+            {Number(floor) === 0 ? '외부 시설' : `${floor}층`}
           </span>
         ))}
       </div>

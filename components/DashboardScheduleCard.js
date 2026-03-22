@@ -56,7 +56,7 @@ export default function DashboardScheduleCard({ schedule, status, onClick }) {
             </span>
           )}
           <span className="text-sm font-semibold text-gray-700 bg-white px-2.5 py-1 rounded-lg border border-gray-200">
-            {schedule.floor}층 {schedule.room}호
+            {schedule.floor === 0 ? schedule.room : `${schedule.floor}층 ${schedule.room}호`}
           </span>
         </div>
       </div>

@@ -12,7 +12,7 @@ import {
   createRoomLog,
 } from '../utils/supabase';
 
-const COLORS_BY_FLOOR = { 1: '#3b82f6', 2: '#10b981', 3: '#8b5cf6' };
+const COLORS_BY_FLOOR = { 1: '#3b82f6', 2: '#10b981', 3: '#8b5cf6', 0: '#6b7280' };
 
 function toLocalDatetimeString(d) {
   const pad = (n) => String(n).padStart(2, '0');

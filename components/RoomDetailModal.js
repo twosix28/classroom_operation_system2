@@ -97,7 +97,7 @@ export default function RoomDetailModal({ roomInfo, onClose, onRequestResolved }
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div>
-            <h3 className="text-xl font-bold text-gray-800">{floor}층 {room}호</h3>
+            <h3 className="text-xl font-bold text-gray-800">{floor === 0 ? room : `${floor}층 ${room}호`}</h3>
             <p className="text-sm text-gray-500 mt-0.5">강의실 상세 정보</p>
           </div>
           <button

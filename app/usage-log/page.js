@@ -23,7 +23,7 @@ function downloadCSV(data, startDate, endDate) {
 
   const rows = data.map((s, i) => [
     i + 1,
-    s.floor ? `${s.floor}층` : '',
+    s.floor === 0 ? '외부' : (s.floor ? `${s.floor}층` : ''),
     s.room || '',
     s.project_name || '',
     CATEGORY_LABELS[s.category] || s.category || '',

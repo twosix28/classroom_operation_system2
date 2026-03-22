@@ -147,12 +147,13 @@ export async function createRoomLog(payload) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const FLOORS = [1, 2];
+export const FLOORS = [1, 2, 0];
 
 export function getRoomsForFloor(floor) {
   const rooms = {
     1: ['133', '137'],
     2: ['231', '232', '233', '234', '235', '236', '239'],
+    0: ['외부 시설'],
   };
   return rooms[floor] || [];
 }

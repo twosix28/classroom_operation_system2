@@ -3,6 +3,9 @@
 import { FLOORS, getRoomsForFloor } from '../utils/supabase';
 
 export default function FloorRoomSelector({ selectedFloor, selectedRoom, onFloorChange, onRoomChange }) {
+  const floorLabel = (floor) => floor === 0 ? '외부 시설' : `${floor}층`;
+  const roomLabel = (floor, room) => floor === 0 ? room : `${room}호`;
+
   return (
     <div className="space-y-3">
       {/* Floor selection */}
@@ -23,14 +26,14 @@ export default function FloorRoomSelector({ selectedFloor, selectedRoom, onFloor
                   : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600'
               }`}
             >
-              {floor}층
+              {floorLabel(floor)}
             </button>
           ))}
         </div>
       </div>
 
       {/* Room selection */}
-      {selectedFloor && (
+      {(selectedFloor !== '' && selectedFloor !== undefined && selectedFloor !== null) && (
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1.5">강의실 선택</label>
           <div className="grid grid-cols-5 gap-1.5">
@@ -45,7 +48,7 @@ export default function FloorRoomSelector({ selectedFloor, selectedRoom, onFloor
                     : 'bg-white text-gray-600 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                 }`}
               >
-                {room}호
+                {roomLabel(selectedFloor, room)}
               </button>
             ))}
           </div>
