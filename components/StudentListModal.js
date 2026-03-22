@@ -109,7 +109,7 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
               <button
                 key={day}
                 onClick={() => setSelectedDay(day)}
-                className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
                   selectedDay === day
                     ? 'bg-blue-600 text-white border-blue-600'
                     : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-600'
