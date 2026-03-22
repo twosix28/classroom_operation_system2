@@ -104,7 +104,7 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
 
         {/* Day tabs — multi-day schedules only */}
         {isMultiDay && (
-          <div className="px-5 pt-3 pb-3 flex gap-2 overflow-x-auto border-b border-gray-100">
+          <div className="px-5 pt-3 pb-3 flex flex-wrap gap-2 border-b border-gray-100">
             {days.map((day) => (
               <button
                 key={day}
