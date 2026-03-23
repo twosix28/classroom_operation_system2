@@ -48,6 +48,24 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
 
   if (!schedule) return null;
 
+  async function saveStudents(next) {
+    setSaving(true);
+    try {
+      await updateSchedule(schedule.id, { students: next });
+      if (onUpdated) onUpdated({ ...schedule, students: next });
+    } catch (err) {
+      console.error('수강생 저장 오류:', err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function updateNote(idx, value) {
+    const next = students.map((s, i) => i === idx ? { ...s, note: value } : s);
+    setStudents(next);
+    await saveStudents(next);
+  }
+
   async function toggleCheck(idx) {
     let next;
     if (isMultiDay) {
@@ -60,15 +78,7 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
       next = students.map((s, i) => i === idx ? { ...s, checked: !s.checked } : s);
     }
     setStudents(next);
-    setSaving(true);
-    try {
-      await updateSchedule(schedule.id, { students: next });
-      if (onUpdated) onUpdated({ ...schedule, students: next });
-    } catch (err) {
-      console.error('수강생 체크 저장 오류:', err);
-    } finally {
-      setSaving(false);
-    }
+    await saveStudents(next);
   }
 
   const isChecked = (s) => isMultiDay
@@ -175,7 +185,18 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
                         {s.name}
                       </td>
                       <td className="px-4 py-2.5 text-gray-600 tabular-nums">{s.phone || '-'}</td>
-                      <td className="px-4 py-2.5 text-gray-500 text-xs">{s.note || '-'}</td>
+                      <td className="px-4 py-2.5 text-xs">
+                        <input
+                          type="text"
+                          defaultValue={s.note || ''}
+                          onBlur={(e) => {
+                            const val = e.target.value.trim();
+                            if (val !== (s.note || '').trim()) updateNote(i, val);
+                          }}
+                          className="w-full min-w-[80px] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none px-0 py-0.5 text-xs text-gray-600 placeholder:text-gray-300"
+                          placeholder="비고 입력"
+                        />
+                      </td>
                       <td className="px-4 py-2.5 text-center">
                         <input
                           type="checkbox"

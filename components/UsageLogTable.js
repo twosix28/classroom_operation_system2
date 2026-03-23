@@ -2,6 +2,70 @@
 
 import { CATEGORY_LABELS } from '../utils/supabase';
 
+function getScheduleDays(start_time, end_time) {
+  const days = [];
+  const current = new Date(start_time);
+  current.setHours(0, 0, 0, 0);
+  const endDay = new Date(end_time);
+  endDay.setHours(0, 0, 0, 0);
+  while (current <= endDay) {
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    days.push(`${y}-${m}-${d}`);
+    current.setDate(current.getDate() + 1);
+  }
+  return days;
+}
+
+function downloadStudentCSV(schedule) {
+  const students = schedule.students;
+  if (!students || !students.length) return;
+
+  const start = new Date(schedule.start_time);
+  const end = new Date(schedule.end_time);
+  const isMultiDay = start.toDateString() !== end.toDateString();
+
+  let headers, rows;
+  if (isMultiDay) {
+    const days = getScheduleDays(schedule.start_time, schedule.end_time);
+    const dayLabels = days.map((d) =>
+      new Date(d + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' })
+    );
+    headers = ['순번', '이름', '연락처', '비고', ...dayLabels];
+    rows = students.map((s) => [
+      s.seq ?? '',
+      s.name ?? '',
+      s.phone ?? '',
+      s.note ?? '',
+      ...days.map((d) => (s.checkedDates?.[d] ? 'O' : '')),
+    ]);
+  } else {
+    headers = ['순번', '이름', '연락처', '비고', '출석'];
+    rows = students.map((s) => [
+      s.seq ?? '',
+      s.name ?? '',
+      s.phone ?? '',
+      s.note ?? '',
+      s.checked ? 'O' : '',
+    ]);
+  }
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const title = (schedule.project_name || schedule.title || 'students').replace(/[/\\?%*:|"<>]/g, '-');
+  const date = start.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\. /g, '-').replace('.', '');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `명단-${title}-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const COLS = [
   { key: 'floor',            label: '층' },
   { key: 'room',             label: '호실' },
@@ -67,6 +131,9 @@ export default function UsageLogTable({ data }) {
                 {col.label}
               </th>
             ))}
+            <th className="px-3 py-3 text-center text-xs font-semibold text-gray-500 whitespace-nowrap w-20">
+              수강생 명단
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100 bg-white">
@@ -78,6 +145,18 @@ export default function UsageLogTable({ data }) {
                   <CellValue col={col} row={row} />
                 </td>
               ))}
+              <td className="px-3 py-2.5 text-center">
+                {Array.isArray(row.students) && row.students.length > 0 ? (
+                  <button
+                    onClick={() => downloadStudentCSV(row)}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors whitespace-nowrap"
+                  >
+                    ⬇ 명단
+                  </button>
+                ) : (
+                  <span className="text-gray-300 text-xs">-</span>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
