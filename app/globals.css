@@ -59,6 +59,23 @@ body {
   animation: pulse-attention 2s ease-in-out infinite;
 }
 
+/* iOS input auto-zoom prevention (font-size < 16px triggers zoom-in) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch target minimum size */
+button, a {
+  touch-action: manipulation;
+}
+
 /* Smooth scrollbar */
 * {
   scrollbar-width: thin;

@@ -22,57 +22,27 @@ export default function NavBar({ openRequestCount = 0, onHelpRequest }) {
         </div>
 
         {/* Nav links */}
-        <nav className="flex items-center gap-1">
-          <Link
-            href="/"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              pathname === '/'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            🏢 강의실 현황
-          </Link>
-          <Link
-            href="/reserve"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              pathname === '/reserve'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            📝 예약 관리
-          </Link>
-          <Link
-            href="/dashboard"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              pathname === '/dashboard'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            📊 대쉬보드
-          </Link>
-          <Link
-            href="/usage-log"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              pathname === '/usage-log'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            📋 사용 이력
-          </Link>
-          <Link
-            href="/meeting"
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-              pathname === '/meeting'
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            🏛️ 회의실 현황
-          </Link>
+        <nav className="flex items-center gap-0.5 sm:gap-1 overflow-x-auto">
+          {[
+            { href: '/',          emoji: '🏢', label: '강의실 현황' },
+            { href: '/reserve',   emoji: '📝', label: '예약 관리' },
+            { href: '/dashboard', emoji: '📊', label: '대쉬보드' },
+            { href: '/usage-log', emoji: '📋', label: '사용 이력' },
+            { href: '/meeting',   emoji: '🏛️', label: '회의실 현황' },
+          ].map(({ href, emoji, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-1 px-2 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap ${
+                pathname === href
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <span>{emoji}</span>
+              <span className="hidden sm:inline">{label}</span>
+            </Link>
+          ))}
         </nav>
 
         {/* Right actions */}
