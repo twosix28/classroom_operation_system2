@@ -17,7 +17,10 @@ function getScheduleDays(start_time, end_time) {
   const endDay = new Date(end_time);
   endDay.setHours(0, 0, 0, 0);
   while (current <= endDay) {
-    days.push(current.toISOString().split('T')[0]);
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    days.push(`${y}-${m}-${d}`);
     current.setDate(current.getDate() + 1);
   }
   return days;
