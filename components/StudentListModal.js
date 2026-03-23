@@ -39,12 +39,18 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
   const days = schedule ? getScheduleDays(schedule.start_time, schedule.end_time) : [];
   const isMultiDay = days.length > 1;
 
+  // students는 schedule 데이터가 바뀔 때마다 동기화
   useEffect(() => {
     setStudents(Array.isArray(schedule?.students) ? schedule.students : []);
+  }, [schedule]);
+
+  // selectedDay는 다른 일정이 열릴 때(id 변경)만 초기화 — 저장 후 탭 리셋 방지
+  useEffect(() => {
     if (schedule) {
       setSelectedDay(getScheduleDays(schedule.start_time, schedule.end_time)[0]);
     }
-  }, [schedule]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedule?.id]);
 
   if (!schedule) return null;
 
