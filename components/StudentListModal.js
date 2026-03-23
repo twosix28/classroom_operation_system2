@@ -60,8 +60,21 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
     }
   }
 
+  function getNoteValue(s) {
+    if (isMultiDay) return s.notes?.[selectedDay] || '';
+    return s.note || '';
+  }
+
   async function updateNote(idx, value) {
-    const next = students.map((s, i) => i === idx ? { ...s, note: value } : s);
+    let next;
+    if (isMultiDay) {
+      next = students.map((s, i) => {
+        if (i !== idx) return s;
+        return { ...s, notes: { ...(s.notes || {}), [selectedDay]: value } };
+      });
+    } else {
+      next = students.map((s, i) => i === idx ? { ...s, note: value } : s);
+    }
     setStudents(next);
     await saveStudents(next);
   }
@@ -173,9 +186,10 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
               <tbody>
                 {students.map((s, i) => {
                   const checked = isChecked(s);
+                  const noteValue = getNoteValue(s);
                   return (
                     <tr
-                      key={i}
+                      key={`${i}-${selectedDay}`}
                       className={`border-b border-gray-50 transition-colors ${
                         checked ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50/50' : ''
                       }`}
@@ -188,10 +202,10 @@ export default function StudentListModal({ schedule, onClose, onUpdated }) {
                       <td className="px-4 py-2.5 text-xs">
                         <input
                           type="text"
-                          defaultValue={s.note || ''}
+                          defaultValue={noteValue}
                           onBlur={(e) => {
                             const val = e.target.value.trim();
-                            if (val !== (s.note || '').trim()) updateNote(i, val);
+                            if (val !== noteValue.trim()) updateNote(i, val);
                           }}
                           className="w-full min-w-[80px] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none px-0 py-0.5 text-xs text-gray-600 placeholder:text-gray-300"
                           placeholder="비고 입력"
