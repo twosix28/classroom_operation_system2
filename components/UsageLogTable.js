@@ -32,18 +32,19 @@ function downloadStudentCSV(schedule) {
     const dayLabels = days.map((d) =>
       new Date(d + 'T00:00:00').toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', weekday: 'short' })
     );
-    // 날짜별 비고 컬럼 + 날짜별 출석 컬럼 순서로 구성
+    // 날짜별로 (비고, 출석) 쌍으로 배치
     headers = [
       '순번', '이름', '연락처',
-      ...dayLabels.map((l) => `비고_${l}`),
-      ...dayLabels.map((l) => `출석_${l}`),
+      ...dayLabels.flatMap((l) => [`비고_${l}`, `출석_${l}`]),
     ];
     rows = students.map((s) => [
       s.seq ?? '',
       s.name ?? '',
       s.phone ?? '',
-      ...days.map((d) => s.notes?.[d] ?? s.note ?? ''),
-      ...days.map((d) => (s.checkedDates?.[d] ? 'O' : '')),
+      ...days.flatMap((d) => [
+        s.notes?.[d] ?? '',
+        s.checkedDates?.[d] ? 'O' : '',
+      ]),
     ]);
   } else {
     headers = ['순번', '이름', '연락처', '비고', '출석'];
